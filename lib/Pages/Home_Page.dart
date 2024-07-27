@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:hive/hive.dart';
 
 class HomePage extends StatefulWidget {
   HomePage();
@@ -16,6 +18,11 @@ class _HomePage extends State<HomePage> {
 
   late double _deviceHeight, _deviceWidth;
   @override
+  @override
+  void initState() {
+    super.initState();
+  }
+
   Widget build(BuildContext context) {
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
@@ -32,8 +39,26 @@ class _HomePage extends State<HomePage> {
           ),
         ),
       ),
-      body: _ToDoList(),
+      body: _ListView(),
       floatingActionButton: _Addtask(),
+    );
+  }
+
+  Widget _ListView() {
+    return FutureBuilder(
+      future: Hive.openBox("tasks"),
+      builder: (
+        BuildContext _context,
+        AsyncSnapshot _snapShot,
+      ) {
+        if (_snapShot.connectionState == ConnectionState.done) {
+          return _ToDoList();
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
     );
   }
 
