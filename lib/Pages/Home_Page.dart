@@ -2,22 +2,24 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
+import 'package:todolist_flutter/models/task.dart';
 
 class HomePage extends StatefulWidget {
   HomePage();
   @override
   State<StatefulWidget> createState() {
-    return _HomePage();
+    return _HomePageState();
   }
 }
 
-class _HomePage extends State<HomePage> {
-  _HomePage();
+class _HomePageState extends State<HomePage> {
+  _HomePageState();
 
   String? _newTaskContext;
 
   late double _deviceHeight, _deviceWidth;
-  @override
+  Box? _box;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +54,7 @@ class _HomePage extends State<HomePage> {
         AsyncSnapshot _snapShot,
       ) {
         if (_snapShot.connectionState == ConnectionState.done) {
+          _box = _snapShot.data;
           return _ToDoList();
         } else {
           return const Center(
@@ -63,30 +66,44 @@ class _HomePage extends State<HomePage> {
   }
 
   Widget _ToDoList() {
-    return ListView(
-      children: [
-        ListTile(
-          title: const Text(
-            'do londry',
-            style: TextStyle(
-              fontSize: 25,
-              decoration: TextDecoration.lineThrough,
+    // Task _newTask = Task(
+    //   content: 'sleeep',
+    //   timeStramp: DateTime.now(),
+    //   isDone: true,
+    // );
+    // _box?.add(_newTask.toMap());
+    List tasks = _box!.values.toList();
+
+    return ListView.builder(
+        itemCount: tasks.length,
+        itemBuilder: (
+          BuildContext _context,
+          int _index,
+        ) {
+          var task = Task.fromMap(tasks[_index]);
+          return ListTile(
+            title: Text(
+              task.content,
+              style: TextStyle(
+                fontSize: 25,
+                decoration: task.isDone ? TextDecoration.lineThrough : null,
+              ),
             ),
-          ),
-          subtitle: Text(
-            DateTime.now().toString(),
-            style: const TextStyle(
-              fontSize: 15,
+            subtitle: Text(
+              task.timeStramp.toString(),
+              style: const TextStyle(
+                fontSize: 15,
+              ),
             ),
-          ),
-          trailing: const Icon(
-            Icons.check_box_outlined,
-            color: Color.fromARGB(255, 23, 214, 252),
-            size: 30,
-          ),
-        ),
-      ],
-    );
+            trailing: Icon(
+              task.isDone
+                  ? Icons.check_box_outlined
+                  : Icons.check_box_outline_blank,
+              color: Color.fromARGB(255, 23, 214, 252),
+              size: 30,
+            ),
+          );
+        });
   }
 
   Widget _Addtask() {
@@ -109,7 +126,20 @@ class _HomePage extends State<HomePage> {
             'Add Task',
           ),
           content: TextField(
-            onSubmitted: (_value) {},
+            onSubmitted: (_value) {
+              if (_newTaskContext != null) {
+                Task _newTask = Task(
+                  content: _newTaskContext!,
+                  timeStramp: DateTime.now(),
+                  isDone: false,
+                );
+                _box?.add(_newTask.toMap());
+              }
+              setState(() {
+                _newTaskContext = null;
+                Navigator.pop(context);
+              });
+            },
             onChanged: (_value) {
               setState(() {
                 _newTaskContext = _value;
