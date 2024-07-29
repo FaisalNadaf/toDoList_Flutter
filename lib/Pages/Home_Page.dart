@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
         BuildContext _context,
         AsyncSnapshot _snapShot,
       ) {
-        if (_snapShot.connectionState == ConnectionState.done) {
+        if (_snapShot.hasData) {
           _box = _snapShot.data;
           return _ToDoList();
         } else {
@@ -102,6 +102,15 @@ class _HomePageState extends State<HomePage> {
               color: Color.fromARGB(255, 23, 214, 252),
               size: 30,
             ),
+            onTap: () {
+              task.isDone = !task.isDone;
+              _box!.putAt(_index, task.toMap());
+              setState(() {});
+            },
+            onLongPress: () {
+              _box!.deleteAt(_index);
+              setState(() {});
+            },
           );
         });
   }
